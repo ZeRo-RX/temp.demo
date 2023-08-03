@@ -1,5 +1,5 @@
 # temp.demo
-it ferst # 
+at ferst # 
 ```
 pip install statsmodels
 pip install pandas
