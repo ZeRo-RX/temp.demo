@@ -1,62 +1,40 @@
 import pandas as pd
-import xgboost as xgb
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from prophet import Prophet
 
-# Reading data from CSV file
+# خواندن داده ها از فایل CSV
 df = pd.read_csv('data3.csv')
 
-# Converting date column to datetime format
+# تبدیل ستون تاریخ به فرمت datetime
 df['date'] = pd.to_datetime(df['date'])
 
-# Extracting year, month, day, and dayofweek as new features
-df['year'] = df['date'].dt.year
-df['month'] = df['date'].dt.month
-df['day'] = df['date'].dt.day
-df['dayofweek'] = df['date'].dt.dayofweek
+# تعداد روزهای آینده که میخواهید پیش‌بینی کنید
+num_days_future = 5
 
-# Preparing input data
-X = df[['year', 'month', 'day', 'dayofweek']]
-y_tmin = df['tmin']
-y_tmax = df['tmax']
+# ایجاد داده های ورودی برای پیش بینی
+future = pd.DataFrame({'ds': pd.date_range(start=df['date'].max(), periods=num_days_future+1)[1:]})
 
-# Splitting data into train and test sets
-X_train, X_test, y_tmin_train, y_tmin_test, y_tmax_train, y_tmax_test = train_test_split(X, y_tmin, y_tmax, test_size=0.2, random_state=42)
+# تعریف مدل برای TMin
+model_tmin = Prophet()
+model_tmin.fit(df[['date', 'tmin']].rename(columns={'date': 'ds', 'tmin': 'y'}))
 
-# Training model for TMin using XGBoost
-model_tmin = xgb.XGBRegressor()
-model_tmin.fit(X_train, y_tmin_train)
+# پیش بینی TMin برای روزهای آینده
+tmin_forecast = model_tmin.predict(future)[['ds', 'yhat']].rename(columns={'yhat': 'tmin_predicted'})
 
-# Training model for TMax using XGBoost
-model_tmax = xgb.XGBRegressor()
-model_tmax.fit(X_train, y_tmax_train)
+# محاسبه درصد خطا برای TMin
+tmin_forecast['error_percentage'] = abs((tmin_forecast['tmin_predicted'] - df['tmin'].iloc[-1]) / df['tmin'].iloc[-1] * 100)
 
-# Predicting TMin and TMax for future days
-num_days_future = 20
-future = pd.DataFrame({'date': pd.date_range(start=df['date'].max(), periods=num_days_future+1)[1:]})
-future['year'] = future['date'].dt.year
-future['month'] = future['date'].dt.month
-future['day'] = future['date'].dt.day
-future['dayofweek'] = future['date'].dt.dayofweek
-future_x = future[['year', 'month', 'day', 'dayofweek']]
+# تعریف مدل برای TMax
+model_tmax = Prophet()
+model_tmax.fit(df[['date', 'tmax']].rename(columns={'date': 'ds', 'tmax': 'y'}))
 
-tmin_forecast = model_tmin.predict(future_x)
-tmax_forecast = model_tmax.predict(future_x)
+# پیش بینی TMax برای روزهای آینده
+tmax_forecast = model_tmax.predict(future)[['ds', 'yhat']].rename(columns={'yhat': 'tmax_predicted'})
 
-# Evaluating the model with test data
-tmin_test_forecast = model_tmin.predict(X_test)
-tmax_test_forecast = model_tmax.predict(X_test)
-tmin_error_percentage = mean_absolute_error(y_tmin_test, tmin_test_forecast) / y_tmin_test.mean() * 100
-tmax_error_percentage = mean_absolute_error(y_tmax_test, tmax_test_forecast) / y_tmax_test.mean() * 100
+# محاسبه درصد خطا برای TMax
+tmax_forecast['error_percentage'] = abs((tmax_forecast['tmax_predicted'] - df['tmax'].iloc[-1]) / df['tmax'].iloc[-1] * 100)
 
-# Preparing new DataFrame to display forecasts along with date and error percentage
-forecast_df = pd.DataFrame({'Date': future['date'], 'TMin Forecast': tmin_forecast, 'TMax Forecast': tmax_forecast})
-forecast_df['TMin Error Percentage'] = (forecast_df['TMin Forecast'] - df['tmin'].mean()) / df['tmin'].mean() * 100
-forecast_df['TMax Error Percentage'] = (forecast_df['TMax Forecast'] - df['tmax'].mean()) / df['tmax'].mean() * 100
-
-# Printing the forecast DataFrame
-print(forecast_df)
-
-# Printing the error percentage
-print(f"TMin Error Percentage: {tmin_error_percentage}%")
-print(f"TMax Error Percentage: {tmax_error_percentage}%")
+# پرینت نتایج
+print("TMin Forecast:")
+print(tmin_forecast)
+print("TMax Forecast:")
+print(tmax_forecast)
