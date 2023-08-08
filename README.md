@@ -3,6 +3,8 @@ at ferst #
 ```
 pip install statsmodels
 pip install pandas
+pip install scikit-learn
+pip install xgboost
 ```
 A simple example with low accuracy that is going to have a lot of changes
 This example has a problem, when the number of future predictions increases, the percentage of error increases
