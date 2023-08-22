@@ -35,7 +35,7 @@ model_tmax = xgb.XGBRegressor()
 model_tmax.fit(X_train, y_tmax_train)
 
 # Predicting TMin and TMax for future days
-num_days_future = 10
+num_days_future = 1000
 future = pd.DataFrame({'date': pd.date_range(start=df['date'].max(), periods=num_days_future+1)[1:]})
 future['year'] = future['date'].dt.year
 future['month'] = future['date'].dt.month
