@@ -9,7 +9,7 @@ data['date'] = pd.to_datetime(data['date'])
 
 # تنظیم ستون date به عنوان index
 data = data.set_index('date')
-# print(data)
+
 # ایجاد مدل ARIMA برای پیش‌بینی دما
 model_temp = ARIMA(data['tmin'], order=(1, 0, 0))
 model_temp_fit = model_temp.fit()

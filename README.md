@@ -5,6 +5,7 @@ pip install statsmodels
 pip install pandas
 pip install scikit-learn
 pip install xgboost
+pip install matplotlib
 ```
 A simple example with low accuracy that is going to have a lot of changes
 This example has a problem, when the number of future predictions increases, the percentage of error increases

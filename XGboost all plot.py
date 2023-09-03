@@ -3,8 +3,7 @@ import xgboost as xgb
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import  mean_absolute_error
 import matplotlib.pyplot as plt
-from xgboost import XGBClassifier
-from sklearn.metrics import accuracy_score
+
 # Reading data from CSV file
 df = pd.read_csv('data3.csv')
 
