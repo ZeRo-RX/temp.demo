@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 # خواندن داده‌ها از فایل CSV
 data = pd.read_csv('data3.csv')
 
